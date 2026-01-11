@@ -1,0 +1,132 @@
+import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { signupUser, clearError } from "../../features/userSlice";
+import styles from "./Signup.module.css";
+
+function Signup() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { loading, error, user } = useSelector((state) => state.user);
+
+  const [formData, setFormData] = useState({
+    fullname: "", email: "", password: "", rollNumber: "",
+    gender: "", dob: "", address: "", phone: "", role: "student",
+  });
+
+  const [validationError, setValidationError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => { dispatch(clearError()); }, [dispatch]);
+  useEffect(() => {
+    if (user?.role === "student") navigate("/student-dashboard", { replace: true });
+  }, [user, navigate]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (name === "rollNumber") {
+      setFormData((prev) => ({ ...prev, [name]: value.toUpperCase() }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
+    if (validationError) setValidationError("");
+  };
+
+  const validateRollNumber = (rollNumber) => /^2K\d{2}-(CS|IT|EE|ME|CE)-\d+$/i.test(rollNumber);
+  const validatePhone = (phone) => /^0\d{3}-\d{7}$/.test(phone);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setValidationError("");
+    if (!formData.fullname || !formData.email || !formData.password || !formData.rollNumber || !formData.gender || !formData.dob || !formData.address || !formData.phone) {
+      setValidationError("All fields are required");
+      return;
+    }
+    if (!validateRollNumber(formData.rollNumber)) {
+      setValidationError("Invalid roll number. Use: 2K26-IT-1");
+      return;
+    }
+    if (!validatePhone(formData.phone)) {
+      setValidationError("Invalid phone. Use: 0316-3280715");
+      return;
+    }
+    if (formData.password.length < 6) {
+      setValidationError("Password must be 6+ characters");
+      return;
+    }
+    dispatch(signupUser(formData));
+  };
+
+  return (
+    <div className={styles.signupContainer}>
+      <div className={styles.signupCard}>
+        <div className={styles.headerSection}>
+          <div className={styles.iconWrapper}><i className="bi bi-person-plus"></i></div>
+          <h2 className={styles.title}>Create Student Account</h2>
+          <p className={styles.subtitle}>Join thousands of students</p>
+        </div>
+        {(error || validationError) && (
+          <div className={styles.errorAlert}>
+            <i className="bi bi-exclamation-circle"></i>
+            <span>{validationError || error}</span>
+          </div>
+        )}
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.formGroup}>
+            <label className={styles.label}><i className="bi bi-person"></i> Full Name *</label>
+            <input type="text" name="fullname" value={formData.fullname} placeholder="Full name" className={styles.input} onChange={handleChange} required />
+          </div>
+          <div className={styles.formGroup}>
+            <label className={styles.label}><i className="bi bi-envelope"></i> Email *</label>
+            <input type="email" name="email" value={formData.email} placeholder="email@university.edu" className={styles.input} onChange={handleChange} required />
+          </div>
+          <div className={styles.formGroup}>
+            <label className={styles.label}><i className="bi bi-lock"></i> Password *</label>
+            <div className={styles.passwordWrapper}>
+              <input type={showPassword ? "text" : "password"} name="password" value={formData.password} placeholder="6+ characters" className={styles.input} onChange={handleChange} required />
+              <button type="button" className={styles.passwordToggle} onClick={() => setShowPassword(!showPassword)}>
+                <i className={`bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'}`}></i>
+              </button>
+            </div>
+          </div>
+          <div className={styles.formGroup}>
+            <label className={styles.label}><i className="bi bi-card-text"></i> Roll Number *</label>
+            <input type="text" name="rollNumber" value={formData.rollNumber} placeholder="2K26-IT-1" className={`${styles.input} ${styles.uppercase}`} onChange={handleChange} required />
+            <small className={styles.hint}>Format: 2K26-IT-1 (CS, IT, EE, ME, CE)</small>
+          </div>
+          <div className={styles.twoColumn}>
+            <div className={styles.formGroup}>
+              <label className={styles.label}><i className="bi bi-gender-ambiguous"></i> Gender *</label>
+              <select name="gender" value={formData.gender} className={styles.select} onChange={handleChange} required>
+                <option value="">Select</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div className={styles.formGroup}>
+              <label className={styles.label}><i className="bi bi-calendar"></i> DOB *</label>
+              <input type="date" name="dob" value={formData.dob} className={styles.input} max={new Date().toISOString().split("T")[0]} onChange={handleChange} required />
+            </div>
+          </div>
+          <div className={styles.formGroup}>
+            <label className={styles.label}><i className="bi bi-telephone"></i> Phone *</label>
+            <input type="tel" name="phone" value={formData.phone} placeholder="0316-3280715" className={styles.input} onChange={handleChange} required />
+            <small className={styles.hint}>Format: 0316-3280715</small>
+          </div>
+          <div className={styles.formGroup}>
+            <label className={styles.label}><i className="bi bi-geo-alt"></i> Address *</label>
+            <textarea name="address" value={formData.address} placeholder="Complete address" className={styles.textarea} rows="2" onChange={handleChange} required />
+          </div>
+          <button type="submit" className={styles.submitBtn} disabled={loading}>
+            {loading ? (<><span className={styles.spinner}></span> Creating...</>) : (<><span>Create Account</span><i className="bi bi-arrow-right"></i></>)}
+          </button>
+          <div className={styles.footer}>
+            <p>Already have account? <a href="/login" className={styles.link}>Login</a></p>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+export default Signup;

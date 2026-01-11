@@ -1,0 +1,142 @@
+.error-boundary-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  padding: 2rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
+.error-boundary-content {
+  max-width: 600px;
+  width: 100%;
+  background: white;
+  border-radius: var(--radius-2xl);
+  padding: 3rem 2rem;
+  text-align: center;
+  box-shadow: var(--shadow-xl);
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.error-icon {
+  margin-bottom: 2rem;
+}
+
+.error-icon i {
+  font-size: 5rem;
+  color: var(--danger-color);
+  animation: bounce 2s ease-in-out infinite;
+}
+
+.error-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-color2);
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, var(--danger-color), var(--danger-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.error-message {
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.error-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+
+.error-details {
+  margin-top: 2rem;
+  text-align: left;
+  background: var(--secondary-color);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  border: 1px solid var(--secondary-dark);
+}
+
+.error-details summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text-color2);
+  padding: 0.5rem;
+  user-select: none;
+}
+
+.error-details summary:hover {
+  color: var(--primary-color);
+}
+
+.error-stack {
+  padding: 1rem;
+}
+
+.error-stack h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-color2);
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.error-stack pre {
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@media (max-width: 768px) {
+  .error-boundary-content {
+    padding: 2rem 1.5rem;
+  }
+  
+  .error-title {
+    font-size: 1.5rem;
+  }
+  
+  .error-message {
+    font-size: 1rem;
+  }
+  
+  .error-actions {
+    flex-direction: column;
+  }
+  
+  .error-actions .btn {
+    width: 100%;
+  }
+}

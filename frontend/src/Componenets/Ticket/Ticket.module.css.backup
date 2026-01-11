@@ -1,0 +1,38 @@
+.ticketcontainer {
+  border: 2px solid rgba(0, 0, 0, 0.312);
+  border-radius: 10px;
+  padding: 20px 20px 4px 20px;
+  margin: 20px;
+  text-align: start;
+}
+.ticket1 {
+  display: flex;
+  justify-content: space-between;
+}
+.ticket2 {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.ticket3 {
+  margin-top: 10px;
+}
+.ticket4 {
+  margin-top: 10px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 20px;
+}
+.ticket5 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  /* border: 2px solid red; */
+}
+.ticket5 p {
+  margin-top: 10px;
+}

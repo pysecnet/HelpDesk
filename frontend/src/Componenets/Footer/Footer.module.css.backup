@@ -1,0 +1,37 @@
+.footerContainer {
+  background-color: var(--secondary-color);
+}
+/* .col1 {
+  border: 2px solid red;
+} */
+.col1 .heading {
+  font-size: 18px;
+  font-weight: 700;
+  padding-top: 7px;
+  /* color: var(--primary-color); */
+}
+
+.col1 .para {
+  font-size: 14px;
+  color: var(--text-color2);
+}
+h5 {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.link {
+  color: var(--text-color2);
+}
+.link:hover {
+  cursor: pointer;
+  font-weight: 700;
+}
+.separation {
+  border-top: 1px solid rgb(205, 205, 205);
+  width: 100%;
+}
+
+.center {
+  margin-top: 30px;
+}

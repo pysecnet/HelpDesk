@@ -1,0 +1,37 @@
+/* .navContainer {
+  background-color: var(--secondary-color);
+} */
+
+.nav1 {
+  display: inline-flex;
+  align-items: center;
+  /* border: 2px solid red; */
+}
+/* .header {
+  border: 2px solid red;
+} */
+
+.brand {
+  font-size: 18px;
+  font-weight: 700;
+  padding-top: 7px;
+  color: var(--primary-color);
+}
+.linkPrimary {
+  color: var(--primary-color);
+  /* border-bottom: 2px solid var(--primary-color); */
+}
+.linkPrimary:hover {
+  font-weight: 700;
+  color: var(--primary-color);
+  /* border-bottom: 2px solid var(--primary-color); */
+}
+.btnoutline {
+  border: 2px solid var(--primary-color);
+  color: var(--primary-color);
+}
+
+.btn {
+  background-color: var(--primary-color);
+  color: var(--text-color1);
+}

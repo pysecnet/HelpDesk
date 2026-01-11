@@ -1,0 +1,339 @@
+import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { signupUser, clearError } from "../../features/userSlice";
+import "./Signup.css";
+
+function Signup() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { loading, error, user } = useSelector((state) => state.user);
+
+  const [formData, setFormData] = useState({
+    fullname: "",
+    email: "",
+    password: "",
+    rollNumber: "",
+    gender: "",
+    dob: "",
+    address: "",
+    phone: "",
+    role: "student",
+  });
+
+  const [validationError, setValidationError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    dispatch(clearError());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (user?.role === "student") {
+      navigate("/student-dashboard", { replace: true });
+    }
+  }, [user, navigate]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    
+    if (name === "rollNumber") {
+      setFormData((prev) => ({ ...prev, [name]: value.toUpperCase() }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
+    
+    if (validationError) setValidationError("");
+  };
+
+  const validateRollNumber = (rollNumber) => {
+    const rollNumberRegex = /^2K\d{2}-(CS|IT|EE|ME|CE)-\d+$/i;
+    return rollNumberRegex.test(rollNumber);
+  };
+
+  const validatePhone = (phone) => {
+    const phoneRegex = /^0\d{3}-\d{7}$/;
+    return phoneRegex.test(phone);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setValidationError("");
+
+    if (!formData.fullname || !formData.email || !formData.password || 
+        !formData.rollNumber || !formData.gender || !formData.dob || 
+        !formData.address || !formData.phone) {
+      setValidationError("All fields are required for student registration");
+      return;
+    }
+
+    if (!validateRollNumber(formData.rollNumber)) {
+      setValidationError("Invalid roll number format. Use: 2K26-IT-1, 2K23-CS-15, etc.");
+      return;
+    }
+
+    if (!validatePhone(formData.phone)) {
+      setValidationError("Invalid phone format. Use: 0316-3280715");
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setValidationError("Password must be at least 6 characters long");
+      return;
+    }
+
+    dispatch(signupUser(formData));
+  };
+
+  return (
+    <div className="signup-container">
+      <div className="signup-wrapper">
+        {/* Left Side - Branding */}
+        <div className="signup-left">
+          <div className="brand-content">
+            <div className="brand-icon">
+              <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 14L21 9L12 4L3 9L12 14Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M12 14L21 9V16L12 21L3 16V9L12 14Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M7.5 11.5V15.5" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+            </div>
+            <h1 className="brand-title">UniHelp</h1>
+            <p className="brand-subtitle">Your Academic Support System</p>
+            <div className="brand-features">
+              <div className="feature-item">
+                <span className="feature-icon">✓</span>
+                <span>24/7 Student Support</span>
+              </div>
+              <div className="feature-item">
+                <span className="feature-icon">✓</span>
+                <span>Quick Ticket Resolution</span>
+              </div>
+              <div className="feature-item">
+                <span className="feature-icon">✓</span>
+                <span>AI-Powered Assistance</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side - Form */}
+        <div className="signup-right">
+          <div className="form-container">
+            <div className="form-header">
+              <h2 className="form-title">Create Your Account</h2>
+              <p className="form-subtitle">Join thousands of students getting help</p>
+            </div>
+
+            {(error || validationError) && (
+              <div className="error-alert">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+                <span>{validationError || error}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="signup-form">
+              {/* Full Name */}
+              <div className="form-group">
+                <label className="form-label">Full Name</label>
+                <div className="input-wrapper">
+                  <svg className="input-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                  </svg>
+                  <input
+                    type="text"
+                    name="fullname"
+                    value={formData.fullname}
+                    placeholder="Enter your full name"
+                    className="form-input"
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Email */}
+              <div className="form-group">
+                <label className="form-label">Email Address</label>
+                <div className="input-wrapper">
+                  <svg className="input-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                  </svg>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    placeholder="you@university.edu"
+                    className="form-input"
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Password */}
+              <div className="form-group">
+                <label className="form-label">Password</label>
+                <div className="input-wrapper">
+                  <svg className="input-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                  </svg>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={formData.password}
+                    placeholder="Minimum 6 characters"
+                    className="form-input"
+                    onChange={handleChange}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? "👁️" : "👁️‍🗨️"}
+                  </button>
+                </div>
+              </div>
+
+              {/* Roll Number */}
+              <div className="form-group">
+                <label className="form-label">Roll Number</label>
+                <div className="input-wrapper">
+                  <svg className="input-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.599-.8a1 1 0 01.894 1.79l-1.233.616 1.738 5.42a1 1 0 01-.285 1.05A3.989 3.989 0 0115 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.738-5.42-1.233-.617a1 1 0 01.894-1.788l1.599.799L11 4.323V3a1 1 0 011-1zm-5 8.274l-.818 2.552c.25.112.526.174.818.174.292 0 .569-.062.818-.174L5 10.274zm10 0l-.818 2.552c.25.112.526.174.818.174.292 0 .569-.062.818-.174L15 10.274z" clipRule="evenodd" />
+                  </svg>
+                  <input
+                    type="text"
+                    name="rollNumber"
+                    value={formData.rollNumber}
+                    placeholder="2K26-IT-1"
+                    className="form-input text-uppercase"
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <p className="input-hint">Format: 2K26-IT-1 (Dept: CS, IT, EE, ME, CE)</p>
+              </div>
+
+              {/* Two Column Layout */}
+              <div className="form-row">
+                {/* Gender */}
+                <div className="form-group">
+                  <label className="form-label">Gender</label>
+                  <div className="input-wrapper">
+                    <svg className="input-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                    </svg>
+                    <select
+                      name="gender"
+                      value={formData.gender}
+                      className="form-input"
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value="">Select</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Date of Birth */}
+                <div className="form-group">
+                  <label className="form-label">Date of Birth</label>
+                  <div className="input-wrapper">
+                    <svg className="input-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                    </svg>
+                    <input
+                      type="date"
+                      name="dob"
+                      value={formData.dob}
+                      className="form-input"
+                      max={new Date().toISOString().split("T")[0]}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Phone */}
+              <div className="form-group">
+                <label className="form-label">Phone Number</label>
+                <div className="input-wrapper">
+                  <svg className="input-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                  </svg>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    placeholder="0316-3280715"
+                    className="form-input"
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <p className="input-hint">Format: 0316-3280715</p>
+              </div>
+
+              {/* Address */}
+              <div className="form-group">
+                <label className="form-label">Address</label>
+                <div className="input-wrapper">
+                  <svg className="input-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                  </svg>
+                  <textarea
+                    name="address"
+                    value={formData.address}
+                    placeholder="Enter your complete address"
+                    className="form-input"
+                    rows="2"
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                className="submit-btn"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <span className="spinner"></span>
+                    Creating Account...
+                  </>
+                ) : (
+                  <>
+                    <span>Create Account</span>
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </>
+                )}
+              </button>
+
+              {/* Login Link */}
+              <div className="form-footer">
+                <p>Already have an account? <a href="/login" className="login-link">Login here</a></p>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default Signup;
