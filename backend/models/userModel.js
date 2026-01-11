@@ -21,36 +21,51 @@ const userSchema = new mongoose.Schema(
         validator: function(v) {
           // Only validate if user is a student
           if (this.role === 'student') {
-            // Format: 2k26-IT-1 or 2K26-CS-1
-            return /^2k\d{2}-(CS|IT|EE|ME|CE)-\d+$/i.test(v);
+            // Format: 2k26-IT-1 or 2K26-CS-1 (includes DVM, CPT, CPD)
+            return /^2k\d{2}-(CS|IT|EE|ME|CE|SE|DVM|CPT|CPD)-\d+$/i.test(v);
           }
           return true;
         },
-        message: 'Invalid roll number format. Use format like: 2K26-IT-1'
+        message: 'Invalid roll number format. Use format like: 2K26-IT-1, 2K26-DVM-1, 2K26-CPD-1'
       }
     },
     
     gender: {
       type: String,
       enum: ["Male", "Female", "Other"],
-      required: true,
+      required: function() {
+        return this.role === 'student';
+      },
     },
     
     dob: { 
       type: Date,
-      required: true
+      required: function() {
+        return this.role === 'student';
+      }
     },
     
     address: { 
       type: String, 
       trim: true,
-      required: true
+      required: function() {
+        return this.role === 'student';
+      }
     },
     
     phone: {
       type: String,
-      required: true,
-      match: [/^0\d{3}-\d{7}$/, "Enter valid phone number (e.g. 0316-3280715)"],
+      required: function() {
+        return this.role === 'student';
+      },
+      validate: {
+        validator: function(v) {
+          // Only validate phone format if provided
+          if (!v) return true;
+          return /^0\d{3}-\d{7}$/.test(v);
+        },
+        message: "Enter valid phone number (e.g. 0316-3280715)"
+      }
     },
     
     role: {

@@ -8,9 +8,10 @@ const generateToken = (id) =>
 
 // Helper function to extract department from roll number
 const getDepartmentFromRollNumber = (rollNumber) => {
-  const match = rollNumber.match(/2k\d{2}-(CS|IT|EE|ME|CE)-\d+/i);
+  // Updated regex to include DVM, CPT, CPD
+  const match = rollNumber.match(/2k\d{2}-(CS|IT|EE|ME|CE|SE|DVM|CPT|CPD)-\d+/i);
   if (match) {
-    return match[1].toUpperCase(); // Returns: IT, CS, EE, ME, CE
+    return match[1].toUpperCase(); // Returns: IT, CS, EE, ME, CE, SE, DVM, CPT, CPD
   }
   return null;
 };
@@ -43,11 +44,11 @@ export const registerUser = async (req, res) => {
         });
       }
 
-      // Validate roll number format
-      const rollNumberRegex = /^2k\d{2}-(CS|IT|EE|ME|CE)-\d+$/i;
+      // Validate roll number format - Updated to include DVM, CPT, CPD
+      const rollNumberRegex = /^2k\d{2}-(CS|IT|EE|ME|CE|SE|DVM|CPT|CPD)-\d+$/i;
       if (!rollNumberRegex.test(rollNumber)) {
         return res.status(400).json({ 
-          message: "Invalid roll number format. Use format like: 2K26-IT-1, 2K23-CS-15, etc." 
+          message: "Invalid roll number format. Use format like: 2K26-IT-1, 2K26-DVM-1, 2K26-CPD-1, etc." 
         });
       }
 

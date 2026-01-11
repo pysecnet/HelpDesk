@@ -159,7 +159,7 @@ const ticketSchema = new mongoose.Schema(
       match: [/^0\d{3}-\d{7}$/, "Enter valid phone number (e.g. 0316-3280715)"],
     },
 
-    // Student identification
+    // Student identification - Updated to include DVM, CPT, CPD
     studentRollNumber: {
       type: String,
       required: true,
@@ -168,7 +168,7 @@ const ticketSchema = new mongoose.Schema(
     studentDepartment: {
       type: String,
       uppercase: true,
-      enum: ["CS", "IT", "EE", "ME", "CE", "SE", "AI", "DS", "CY"],
+      enum: ["CS", "IT", "EE", "ME", "CE", "SE", "AI", "DS", "CY", "DVM", "CPT", "CPD"],
     },
     studentYear: {
       type: String,

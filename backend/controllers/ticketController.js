@@ -20,7 +20,7 @@ const validateRollNumber = (rollNumber) => {
   if (!match) {
     return {
       isValid: false,
-      error: "Invalid roll number format. Expected format: 2KYY-DEPT-N (e.g., 2K21-IT-1)",
+      error: "Invalid roll number format. Expected format: 2KYY-DEPT-N (e.g., 2K21-IT-1, 2K21-DVM-1)",
     };
   }
 
@@ -40,6 +40,7 @@ const validateRollNumber = (rollNumber) => {
     return { isValid: false, error: "Invalid enrollment year in roll number" };
   }
 
+  // Updated department mapping with DVM, CPT, CPD
   const deptMapping = {
     IT: "Information Technology",
     CS: "Computer Science",
@@ -50,6 +51,9 @@ const validateRollNumber = (rollNumber) => {
     AI: "Artificial Intelligence",
     DS: "Data Science",
     CY: "Cyber Security",
+    DVM: "DVM",           // DVM Department
+    CPT: "CPD",           // CPT students go to CPD department
+    CPD: "CPD",           // CPD students go to CPD department
   };
 
   return {
@@ -67,6 +71,22 @@ const validateRollNumber = (rollNumber) => {
 const extractDepartmentCode = (rollNumber) => {
   const match = rollNumber.match(/^2K\d{2}-([A-Z]+)-\d+$/i);
   return match ? match[1].toUpperCase() : null;
+};
+
+// Helper to get target department based on student's department code
+const getTargetDepartment = async (deptCode) => {
+  // CPT and CPD students go to CPD department
+  const targetDeptName = (deptCode === "CPT" || deptCode === "CPD") ? "CPD" : deptCode;
+  
+  const department = await Department.findOne({
+    $or: [
+      { name: { $regex: `^${targetDeptName}$`, $options: "i" } },
+      { name: { $regex: targetDeptName, $options: "i" } },
+      { code: targetDeptName },
+    ],
+  });
+  
+  return department;
 };
 
 const addHistory = (ticket, action, performedBy, performedByName, performedByRole, description, oldValue = null, newValue = null) => {
@@ -119,13 +139,8 @@ export const createTicket = async (req, res) => {
       const departmentCode = extractDepartmentCode(user.rollNumber);
       studentDepartmentCode = departmentCode;
 
-      department = await Department.findOne({
-        $or: [
-          { name: { $regex: departmentCode, $options: "i" } },
-          { name: validation.data.departmentName },
-          { code: departmentCode },
-        ],
-      });
+      // Use helper to get correct target department (handles CPT -> CPD routing)
+      department = await getTargetDepartment(departmentCode);
 
       if (department) {
         ticketStatus = "Assigned";
@@ -146,7 +161,7 @@ export const createTicket = async (req, res) => {
       ticketNo,
       status: ticketStatus,
       studentRollNumber: user.rollNumber,
-      priority: priority || "Medium", // ✅ NEW: Priority
+      priority: priority || "Medium",
     };
 
     if (department) {
@@ -219,9 +234,34 @@ export const getMyTickets = async (req, res) => {
 };
 
 // Get all tickets (admin)
+// Main Admin (no departmentId): sees all tickets
+// DVM Admin: sees only DVM student tickets
+// CPD Admin: sees only CPT and CPD student tickets
 export const getAllTickets = async (req, res) => {
   try {
-    const tickets = await Ticket.find()
+    const user = req.user;
+    let ticketFilter = {};
+
+    // Check if admin has a department filter
+    if (user.role === "admin" && user.departmentId) {
+      const Department = (await import("../models/departmentModel.js")).default;
+      const department = await Department.findById(user.departmentId);
+      
+      if (department) {
+        const deptName = department.name.toUpperCase();
+        
+        if (deptName === "DVM") {
+          ticketFilter.studentDepartment = "DVM";
+        } else if (deptName === "CPD") {
+          // CPD admin sees both CPT and CPD students
+          ticketFilter.studentDepartment = { $in: ["CPT", "CPD"] };
+        } else {
+          ticketFilter.studentDepartment = deptName;
+        }
+      }
+    }
+
+    const tickets = await Ticket.find(ticketFilter)
       .populate("assignedDepartment", "name")
       .populate("userId", "fullname email rollNumber")
       .sort({ createdAt: -1 });
@@ -287,7 +327,7 @@ export const getDepartmentTickets = async (req, res) => {
   }
 };
 
-// ✅ NEW: Get single ticket with full details
+// Get single ticket with full details
 export const getTicketById = async (req, res) => {
   try {
     const { ticketId } = req.params;
@@ -450,7 +490,7 @@ export const updateTicketStatus = async (req, res) => {
   }
 };
 
-// ✅ NEW: Update ticket priority
+// Update ticket priority
 export const updateTicketPriority = async (req, res) => {
   try {
     const { ticketId } = req.params;
@@ -509,7 +549,7 @@ export const updateTicketPriority = async (req, res) => {
   }
 };
 
-// ✅ NEW: Add comment to ticket
+// Add comment to ticket
 export const addComment = async (req, res) => {
   try {
     const { ticketId } = req.params;
@@ -575,7 +615,7 @@ export const addComment = async (req, res) => {
   }
 };
 
-// ✅ NEW: Upload file attachment
+// Upload file attachment
 export const uploadAttachment = async (req, res) => {
   try {
     const { ticketId } = req.params;
@@ -651,7 +691,7 @@ export const uploadAttachment = async (req, res) => {
   }
 };
 
-// ✅ NEW: Download file attachment
+// Download file attachment
 export const downloadAttachment = async (req, res) => {
   try {
     const { ticketId, attachmentId } = req.params;

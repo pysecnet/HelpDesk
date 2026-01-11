@@ -50,7 +50,8 @@ function Signup() {
   };
 
   const validateRollNumber = (rollNumber) => {
-    const rollNumberRegex = /^2K\d{2}-(CS|IT|EE|ME|CE)-\d+$/i;
+    // Updated regex to include DVM, CPT, CPD, SE
+    const rollNumberRegex = /^2K\d{2}-(CS|IT|EE|ME|CE|SE|DVM|CPT|CPD)-\d+$/i;
     return rollNumberRegex.test(rollNumber);
   };
 
@@ -73,7 +74,7 @@ function Signup() {
 
     // Validate roll number format
     if (!validateRollNumber(formData.rollNumber)) {
-      setValidationError("Invalid roll number format. Use: 2K26-IT-1, 2K23-CS-15, etc.");
+      setValidationError("Invalid roll number format. Use: 2K26-IT-1, 2K26-DVM-1, 2K26-CPD-1, etc.");
       return;
     }
 
@@ -293,7 +294,7 @@ function Signup() {
                       id="rollNumber"
                       name="rollNumber"
                       value={formData.rollNumber}
-                      placeholder="e.g., 2K26-IT-1"
+                      placeholder="e.g., 2K26-IT-1 or 2K26-DVM-1"
                       className={`${styles.input} ${styles.uppercase}`}
                       onChange={handleChange}
                       required
@@ -301,7 +302,7 @@ function Signup() {
                   </div>
                   <div className={styles.inputHint}>
                     <i className="bi bi-info-circle"></i>
-                    Format: 2K26-IT-1 (Departments: CS, IT, EE, ME, CE)
+                    Format: 2K26-IT-1 (Departments: CS, IT, SE, EE, ME, CE, DVM, CPT, CPD)
                   </div>
                 </div>
               </div>
