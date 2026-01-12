@@ -20,7 +20,7 @@ const isAdmin = (req, res, next) => {
   }
 };
 
-// All routes require authentication
+// All routes require authentication and admin role
 router.use(protect);
 router.use(isAdmin);
 
@@ -30,19 +30,13 @@ router.get("/", getAllDepartments);
 // GET /api/departments/:id - Get single department
 router.get("/:id", getDepartmentById);
 
-// POST /api/departments/add - Create new department (matches frontend)
-router.post("/add", createDepartment);
-
-// POST /api/departments - Also support this route
+// POST /api/departments - Create new department
 router.post("/", createDepartment);
 
 // PUT /api/departments/:id - Update department
 router.put("/:id", updateDepartment);
 
-// DELETE /api/departments/delete/:id - Delete department (matches frontend)
-router.delete("/delete/:id", deleteDepartment);
-
-// DELETE /api/departments/:id - Also support this route
+// DELETE /api/departments/:id - Delete department (soft delete)
 router.delete("/:id", deleteDepartment);
 
 export default router;

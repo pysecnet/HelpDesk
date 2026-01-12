@@ -7,9 +7,7 @@ import userRoutes from "./routes/userRoutes.js";
 import assistantRoutes from "./routes/assistantRoutes.js";
 import departmentRoutes from "./routes/departmentRoutes.js";
 import ticketRoutes from "./routes/ticketRoutes.js";
-import adminRoutes from "./routes/adminRoutes.js"; // ✅ NEW LINE - Admin routes import
-
-dotenv.config();
+import adminRoutes from "./routes/adminRoutes.js";
 
 const app = express();
 

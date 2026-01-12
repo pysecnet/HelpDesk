@@ -4,27 +4,10 @@ import User from "../models/userModel.js";
 import Department from "../models/departmentModel.js";
 
 /**
- * Helper function to get admin's category
- */
-const getAdminCategory = async (user) => {
-  if (!user.departmentId) {
-    return "MAIN";
-  }
-  
-  const dept = await Department.findById(user.departmentId);
-  if (dept) {
-    const deptName = dept.name.toUpperCase();
-    if (deptName === "DVM") return "DVM";
-    if (deptName === "CPD") return "CPD";
-  }
-  return "MAIN";
-};
-
-/**
  * Get dashboard statistics for admin
  * Route: GET /api/admin/dashboard/stats
  * 
- * - Main Admin (no departmentId): sees all tickets from MAIN category students
+ * - Main Admin (no departmentId): sees all tickets
  * - DVM Admin (departmentId = DVM): sees only DVM student tickets
  * - CPD Admin (departmentId = CPD): sees only CPT and CPD student tickets
  */
@@ -35,18 +18,26 @@ export const getDashboardStats = async (req, res) => {
 
     // Build query filter based on admin type
     let ticketFilter = {};
-    const category = await getAdminCategory(req.user);
-    console.log(`🔍 Admin category: ${category}`);
     
-    // Filter tickets by student department based on admin category
-    if (category === "DVM") {
-      ticketFilter.studentDepartment = "DVM";
-    } else if (category === "CPD") {
-      // CPD admin sees both CPT and CPD students
-      ticketFilter.studentDepartment = { $in: ["CPT", "CPD"] };
-    } else {
-      // MAIN admin sees CS, IT, SE, EE, ME, CE students
-      ticketFilter.studentDepartment = { $in: ["CS", "IT", "SE", "EE", "ME", "CE"] };
+    // Check if admin has a department filter
+    if (req.user.departmentId) {
+      // Get department name
+      const department = await Department.findById(req.user.departmentId);
+      if (department) {
+        const deptName = department.name.toUpperCase();
+        console.log(`🔍 Filtering for department: ${deptName}`);
+        
+        // Filter tickets by student department
+        if (deptName === "DVM") {
+          ticketFilter.studentDepartment = "DVM";
+        } else if (deptName === "CPD") {
+          // CPD admin sees both CPT and CPD students
+          ticketFilter.studentDepartment = { $in: ["CPT", "CPD"] };
+        } else {
+          // Other department admins see their department's tickets
+          ticketFilter.studentDepartment = deptName;
+        }
+      }
     }
 
     console.log("Ticket filter:", ticketFilter);
@@ -63,21 +54,21 @@ export const getDashboardStats = async (req, res) => {
 
     console.log(`Open: ${openTickets}, Assigned: ${assignedTickets}, In Progress: ${inProgressTickets}, Closed: ${closedTickets}`);
 
-    // Count departments for this admin's category
-    const totalDepartments = await Department.countDocuments({ 
-      category: category,
-      isActive: true 
-    });
+    // Count departments and students
+    const totalDepartments = await Department.countDocuments();
     
-    // Count students based on admin category
+    // Count students based on admin type
     let studentFilter = { role: "student" };
-    if (category === "DVM") {
-      studentFilter.rollNumber = { $regex: /^2K\d{2}-DVM-/i };
-    } else if (category === "CPD") {
-      studentFilter.rollNumber = { $regex: /^2K\d{2}-(CPT|CPD)-/i };
-    } else {
-      // MAIN admin sees CS, IT, SE, EE, ME, CE students
-      studentFilter.rollNumber = { $regex: /^2K\d{2}-(CS|IT|SE|EE|ME|CE)-/i };
+    if (req.user.departmentId) {
+      const department = await Department.findById(req.user.departmentId);
+      if (department) {
+        const deptName = department.name.toUpperCase();
+        if (deptName === "DVM") {
+          studentFilter.rollNumber = { $regex: /^2K\d{2}-DVM-/i };
+        } else if (deptName === "CPD") {
+          studentFilter.rollNumber = { $regex: /^2K\d{2}-(CPT|CPD)-/i };
+        }
+      }
     }
     const totalStudents = await User.countDocuments(studentFilter);
 
@@ -141,22 +132,27 @@ export const getDashboardStats = async (req, res) => {
 };
 
 /**
- * Get all tickets for admin (with category-based filter)
+ * Get all tickets for admin (with optional department filter)
  * Route: GET /api/admin/tickets
  */
 export const getAdminTickets = async (req, res) => {
   try {
     let ticketFilter = {};
-    const category = await getAdminCategory(req.user);
     
-    // Filter tickets by student department based on admin category
-    if (category === "DVM") {
-      ticketFilter.studentDepartment = "DVM";
-    } else if (category === "CPD") {
-      ticketFilter.studentDepartment = { $in: ["CPT", "CPD"] };
-    } else {
-      // MAIN admin sees CS, IT, SE, EE, ME, CE students
-      ticketFilter.studentDepartment = { $in: ["CS", "IT", "SE", "EE", "ME", "CE"] };
+    // Check if admin has a department filter
+    if (req.user.departmentId) {
+      const department = await Department.findById(req.user.departmentId);
+      if (department) {
+        const deptName = department.name.toUpperCase();
+        
+        if (deptName === "DVM") {
+          ticketFilter.studentDepartment = "DVM";
+        } else if (deptName === "CPD") {
+          ticketFilter.studentDepartment = { $in: ["CPT", "CPD"] };
+        } else {
+          ticketFilter.studentDepartment = deptName;
+        }
+      }
     }
 
     const tickets = await Ticket.find(ticketFilter)
@@ -176,3 +172,5 @@ export const getAdminTickets = async (req, res) => {
     });
   }
 };
+
+export default { getDashboardStats, getAdminTickets };

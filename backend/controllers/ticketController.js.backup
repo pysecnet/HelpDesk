@@ -237,33 +237,27 @@ export const getMyTickets = async (req, res) => {
 // Main Admin (no departmentId): sees all tickets
 // DVM Admin: sees only DVM student tickets
 // CPD Admin: sees only CPT and CPD student tickets
-// Main Admin: sees CS, IT, SE, EE, ME, CE student tickets
 export const getAllTickets = async (req, res) => {
   try {
     const user = req.user;
     let ticketFilter = {};
 
     // Check if admin has a department filter
-    if (user.role === "admin") {
-      let category = "MAIN";
+    if (user.role === "admin" && user.departmentId) {
+      const Department = (await import("../models/departmentModel.js")).default;
+      const department = await Department.findById(user.departmentId);
       
-      if (user.departmentId) {
-        const department = await Department.findById(user.departmentId);
-        if (department) {
-          const deptName = department.name.toUpperCase();
-          if (deptName === "DVM") category = "DVM";
-          else if (deptName === "CPD") category = "CPD";
+      if (department) {
+        const deptName = department.name.toUpperCase();
+        
+        if (deptName === "DVM") {
+          ticketFilter.studentDepartment = "DVM";
+        } else if (deptName === "CPD") {
+          // CPD admin sees both CPT and CPD students
+          ticketFilter.studentDepartment = { $in: ["CPT", "CPD"] };
+        } else {
+          ticketFilter.studentDepartment = deptName;
         }
-      }
-      
-      // Filter tickets by student department based on admin category
-      if (category === "DVM") {
-        ticketFilter.studentDepartment = "DVM";
-      } else if (category === "CPD") {
-        ticketFilter.studentDepartment = { $in: ["CPT", "CPD"] };
-      } else {
-        // MAIN admin sees CS, IT, SE, EE, ME, CE students
-        ticketFilter.studentDepartment = { $in: ["CS", "IT", "SE", "EE", "ME", "CE"] };
       }
     }
 

@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import User from "../models/userModel.js";
 
 // Protect route & attach user
-const protect = async (req, res, next) => {
+export const protect = async (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer "))
     return res.status(401).json({ message: "No token provided" });
@@ -34,4 +34,23 @@ const protect = async (req, res, next) => {
   }
 };
 
+// Check if user is admin
+export const isAdmin = (req, res, next) => {
+  if (req.user && req.user.role === "admin") {
+    next();
+  } else {
+    res.status(403).json({ message: "Access denied. Admin only." });
+  }
+};
+
+// Check if user is department
+export const isDepartment = (req, res, next) => {
+  if (req.user && (req.user.role === "department" || req.user.role === "admin")) {
+    next();
+  } else {
+    res.status(403).json({ message: "Access denied. Department or Admin only." });
+  }
+};
+
+// Default export for backward compatibility
 export default protect;

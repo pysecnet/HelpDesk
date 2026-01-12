@@ -12,7 +12,14 @@ export const fetchDepartments = createAsyncThunk(
   "departments/fetchAll",
   async (_, thunkAPI) => {
     try {
-      const res = await fetch(DEPTS_BASE);
+      const token = getToken();
+      
+      const res = await fetch(DEPTS_BASE, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,  // ✅ Include auth token
+        },
+      });
 
       const data = await res.json();
 
